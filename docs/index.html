@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AntiMusic — 按媒体键唤醒你的音乐 App，而不是 Apple Music</title>
+<meta name="description" content="macOS 菜单栏工具：按下 F7/F8/F9 唤醒你指定的音乐 App（如 QQ 音乐）并自动播放，出声后媒体键交棒系统正常路由。">
+<meta property="og:title" content="AntiMusic">
+<meta property="og:description" content="按媒体键唤醒你的音乐 App，而不是 Apple Music。">
+<meta property="og:image" content="icon-512.png">
+<link rel="icon" type="image/png" href="icon-512.png">
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg-soft: #161b22;
+    --card: #1c2128;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #9198a1;
+    --accent: #3fb950;
+    --accent-2: #58a6ff;
+    --warn: #d29922;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  /* Hero */
+  header { padding: 88px 0 64px; text-align: center; }
+  .logo { width: 108px; height: 108px; border-radius: 24px; box-shadow: 0 12px 40px rgba(0,0,0,.5); }
+  h1 { font-size: clamp(32px, 6vw, 52px); margin-top: 28px; letter-spacing: -0.02em; }
+  h1 .hl { color: var(--accent); }
+  .tagline { font-size: clamp(17px, 2.6vw, 21px); color: var(--muted); max-width: 640px; margin: 18px auto 0; }
+  .cta { margin-top: 36px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-block; padding: 14px 30px; border-radius: 10px;
+    font-size: 17px; font-weight: 600; text-decoration: none; transition: transform .15s, box-shadow .15s;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-primary { background: var(--accent); color: #04150a; box-shadow: 0 6px 24px rgba(63,185,80,.35); }
+  .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent-2); color: var(--accent-2); }
+  .meta { margin-top: 16px; color: var(--muted); font-size: 14px; }
+  .meta a { color: var(--accent-2); text-decoration: none; }
+  .meta a:hover { text-decoration: underline; }
+
+  /* Sections */
+  section { padding: 48px 0; }
+  h2 { font-size: clamp(24px, 4vw, 32px); margin-bottom: 8px; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); margin-bottom: 28px; font-size: 16px; }
+
+  .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 24px;
+  }
+  .card h3 { font-size: 18px; margin-bottom: 8px; }
+  .card p { color: var(--muted); font-size: 15px; }
+  .card .icon { font-size: 26px; margin-bottom: 12px; display: block; }
+
+  /* Steps */
+  .steps { counter-reset: step; display: grid; gap: 16px; }
+  .step {
+    background: var(--bg-soft); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px 22px 20px 66px; position: relative;
+  }
+  .step::before {
+    counter-increment: step; content: counter(step);
+    position: absolute; left: 20px; top: 20px;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent); color: #04150a;
+    font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 15px;
+  }
+  .step h3 { font-size: 16px; margin-bottom: 4px; }
+  .step p { color: var(--muted); font-size: 15px; }
+  .step code, p code, li code {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 1px 7px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9em;
+    color: var(--accent-2);
+  }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 15px; background: var(--card); border-radius: 12px; overflow: hidden; }
+  th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { background: var(--bg-soft); font-size: 14px; color: var(--muted); font-weight: 600; }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { white-space: nowrap; }
+
+  .warn {
+    background: rgba(210,153,34,.08); border: 1px solid rgba(210,153,34,.4);
+    border-radius: 12px; padding: 18px 22px; color: #e3b341; font-size: 15px;
+  }
+  .warn strong { color: #f0c674; }
+
+  ul.plain { list-style: none; }
+  ul.plain li { padding: 7px 0 7px 26px; position: relative; color: var(--muted); font-size: 15.5px; }
+  ul.plain li::before { content: "✓"; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+
+  .kbd {
+    display: inline-block; min-width: 26px; text-align: center;
+    background: var(--bg); border: 1px solid var(--border); border-bottom-width: 3px;
+    border-radius: 6px; padding: 2px 8px; font-size: 14px; font-weight: 600; color: var(--text);
+  }
+
+  footer { border-top: 1px solid var(--border); margin-top: 56px; padding: 32px 0 48px; color: var(--muted); font-size: 14px; text-align: center; }
+  footer a { color: var(--accent-2); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  .divider { height: 1px; background: var(--border); }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <img class="logo" src="icon-1024.png" alt="AntiMusic 图标" width="108" height="108">
+  <h1>按 <span class="hl">F8</span>，唤醒你的音乐 App<br>而不是 Apple Music</h1>
+  <p class="tagline">
+    AntiMusic 是一个 macOS 菜单栏工具：媒体键按下时，自动启动你指定的音乐 App（默认 QQ 音乐）并替你按下第一次播放；出声之后，媒体键交还系统正常路由。
+  </p>
+  <div class="cta">
+    <a class="btn btn-primary" href="https://github.com/Haobot/AntiMusic/releases/latest/download/AntiMusic-1.2-macOS.zip">⬇ 下载 AntiMusic 1.2</a>
+    <a class="btn btn-ghost" href="https://github.com/Haobot/AntiMusic">查看源码</a>
+  </div>
+  <p class="meta">macOS 14+ · Universal（Apple Silicon / Intel）· 免费开源 MIT ·
+    <a href="https://github.com/Haobot/AntiMusic/releases">全部版本</a>
+  </p>
+</header>
+
+<div class="wrap"><div class="divider"></div></div>
+
+<section class="wrap">
+  <h2>它解决什么问题</h2>
+  <p class="sub">macOS 上按媒体键永远只会唤起 Apple Music——即使你从来不用它。</p>
+  <div class="grid">
+    <div class="card">
+      <span class="icon">🎵</span>
+      <h3>冷启动一键出声</h3>
+      <p>音乐 App 没开时按 F8：自动启动 → 注入播放指令 → 等待真实出声。实测冷启动到出声 <strong style="color:var(--accent)">1.9–2.3 秒</strong>（验收标准 ≤3s）。</p>
+    </div>
+    <div class="card">
+      <span class="icon">🚫</span>
+      <h3>Apple Music 不再弹出</h3>
+      <p>CGEventTap 在事件层拦截：目标 App 在出声就放行，没出声就吞掉并触发唤醒——Apple Music 因此不会被 rcd 拉起。</p>
+    </div>
+    <div class="card">
+      <span class="icon">🤝</span>
+      <h3>出声后自动交棒</h3>
+      <p>一旦检测到目标进程真实出声，媒体键全部交棒给它：暂停、恢复、F7/F9 调音量，与原生体验一致。</p>
+    </div>
+    <div class="card">
+      <span class="icon">🧩</span>
+      <h3>不止 QQ 音乐</h3>
+      <p>设置里可任选音乐播放器（自动读取 Bundle ID）。注入链按优先级自动降级，每一级都可在「高级」页开关。</p>
+    </div>
+    <div class="card">
+      <span class="icon">🔊</span>
+      <h3>以「真实出声」为准</h3>
+      <p>成功判据是 CoreAudio 检测到目标进程真的在输出音频，而不是"事件发出去了"。失败自动重试并逐级降级。</p>
+    </div>
+    <div class="card">
+      <span class="icon">🧪</span>
+      <h3>闭环测试架构</h3>
+      <p><code>tests/run_all.sh</code> 一键：构建 → 35 项状态机单元测试 → POC 套件 → 验收 → 报告。全部结论可复跑。</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>三步开始</h2>
+  <p class="sub">首次使用需要授两处权限、配一次快捷键，之后就不用再管了。</p>
+  <div class="steps">
+    <div class="step">
+      <h3>下载并打开</h3>
+      <p>下载 zip、解压，把 <code>AntiMusic.app</code> 拖进「应用程序」。首次打开请<strong>右键 → 打开</strong>（未公证构建，直接双击会被 Gatekeeper 拦截）。</p>
+    </div>
+    <div class="step">
+      <h3>授予两处权限</h3>
+      <p>按启动弹窗引导，在「系统设置 → 隐私与安全性」里打开<strong>输入监控</strong>与<strong>辅助功能</strong>（授给 AntiMusic）。</p>
+    </div>
+    <div class="step">
+      <h3>配置 QQ 音乐全局快捷键</h3>
+      <p>QQ 音乐 → 设置 → 快捷键 → 勾选「启用全局快捷键」，给「播放/暂停」绑定 <span class="kbd">⌘</span><span class="kbd">⌥</span><span class="kbd">P</span>；然后在 AntiMusic「设置 → 通用」里录成同样的组合键。</p>
+    </div>
+  </div>
+
+  <div class="warn" style="margin-top:22px">
+    <strong>最容易漏的第三处权限：</strong>QQ 音乐<strong>本体</strong>也要有「输入监控」授权，否则它的全局快捷键收不到事件——典型表现是「QQ 音乐启动了但就是不放歌」。自查方法：QQ 音乐在任何前后台状态下按绑定组合键都能控制播放 ⇒ 授权正常。
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>按优先级自动降级的注入链</h2>
+  <p class="sub">每种手段都经实弹验证，结论如实标注；全部可在设置「高级」页开关。</p>
+  <table>
+    <thead><tr><th>优先级</th><th>手段</th><th>实测结论（macOS 27 + QQ音乐 11.10.0）</th></tr></thead>
+    <tbody>
+      <tr><td>P1 ★</td><td>模拟 QQ 音乐全局快捷键</td><td>广播变体首试命中（App 内 84ms 响应），主推路径</td></tr>
+      <tr><td>P0</td><td>定向系统媒体键</td><td>实测无效，留作其他版本兼容</td></tr>
+      <tr><td>P2</td><td>URL scheme</td><td>有效（1.2s 内触发播放），作为快速兜底</td></tr>
+      <tr><td>P3</td><td>AX 点击播放菜单</td><td>有效（瞬时、可靠），最后一级</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="wrap">
+  <h2>常见问题</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>启动了但不出声？</h3>
+      <p>九成是 QQ 音乐本体缺「输入监控」授权；其次是全局快捷键没绑定、或与 AntiMusic 设置不一致。日志在 <code>~/Library/Logs/AntiMusic/wake.log</code>。</p>
+    </div>
+    <div class="card">
+      <h3>按 F8 毫无反应？</h3>
+      <p>确认 AntiMusic 在运行（菜单栏音符图标）。建议在「系统设置 → 通用 → 登录项」里开启自启。</p>
+    </div>
+    <div class="card">
+      <h3>播放中按 F8 想暂停？</h3>
+      <p>出声后媒体键由目标 App 接管，直接按即可。已知限制：合成测试事件无法覆盖该场景，须用实体按键验证。</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>开源</h2>
+  <p class="sub">MIT 协议，基于 <a href="https://github.com/nift4/AntiMusic" style="color:var(--accent-2)">nift4/AntiMusic</a> 深度改造。</p>
+  <ul class="plain">
+    <li>可行性依据与逐项 POC 实测结论：<a href="https://github.com/Haobot/AntiMusic/blob/main/docs/FEASIBILITY.md" style="color:var(--accent-2)">docs/FEASIBILITY.md</a></li>
+    <li>闭环测试架构说明：<a href="https://github.com/Haobot/AntiMusic/blob/main/docs/TESTING.md" style="color:var(--accent-2)">docs/TESTING.md</a></li>
+    <li>图标致谢 <a href="https://github.com/FuzzyIdeas/MusicDecoy" style="color:var(--accent-2)">Music Decoy</a></li>
+  </ul>
+</section>
+
+<footer>
+  <p>AntiMusic · MIT License · <a href="https://github.com/Haobot/AntiMusic">GitHub</a> · <a href="https://github.com/Haobot/AntiMusic/issues">Issue 反馈</a></p>
+</footer>
+
+</body>
+</html>

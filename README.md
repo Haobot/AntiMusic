@@ -4,6 +4,12 @@
 
 基于 [nift4/AntiMusic](https://github.com/nift4/AntiMusic) 深度改造：新增 CGEventTap 直通拦截、注入式唤醒（模拟 QQ 音乐全局快捷键为主推）、CoreAudio 出声验证与闭环测试架构。
 
+## ⬇ 下载
+
+- **[简介网页](https://haobot.github.io/AntiMusic/)**（安装指引 + 常见问题）
+- **[Releases](https://github.com/Haobot/AntiMusic/releases/latest)** → `AntiMusic-1.2-macOS.zip`（macOS 14+，Universal）
+- 解压后把 `AntiMusic.app` 拖进「应用程序」；首次打开请**右键 → 打开**（未公证构建）
+
 - 实测环境：**macOS 27.0.1 (arm64) · QQ音乐 11.10.0 · Xcode 27.0**
 - 可行性依据与逐项 POC 实测结论：[docs/FEASIBILITY.md](docs/FEASIBILITY.md)
 - 闭环测试架构说明：[docs/TESTING.md](docs/TESTING.md)
