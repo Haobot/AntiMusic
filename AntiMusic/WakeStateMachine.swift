@@ -20,6 +20,17 @@ public enum WakeState: String, Codable {
     case ready = "Ready"
     case injecting = "Injecting"
     case handedOff = "HandedOff"
+
+    /// 面向普通用户的中文状态名（设置窗口状态行用）
+    public var friendlyName: String {
+        switch self {
+        case .idle: return "空闲"
+        case .launching: return "正在启动播放器"
+        case .ready: return "播放器就绪"
+        case .injecting: return "正在发送播放指令"
+        case .handedOff: return "播放中"
+        }
+    }
 }
 
 public enum InjectionDecision {

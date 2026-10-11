@@ -113,8 +113,8 @@ fi
 ask_manual "6-bluetooth" "连接/摘下蓝牙耳机：不应误唤 Apple Music"
 ask_manual "7-reboot-autostart" "重启 Mac：开机自启后行为不变（先确认登录项里有 AntiMusic）"
 ask_manual "9-now-playing-widget" "控制中心 Now Playing 显示目标 App 的播放信息（做不到请在 README 已知限制确认）"
-ask_manual "10-test-inject-button" "QQ音乐暂停时，菜单栏 →「测试注入」→ 开始播放"
-ask_manual "11-permission-revoke" "撤销 QQ音乐「输入监控」后点测试注入：程序应给出诊断提示而非静默失败"
+ask_manual "10-test-inject-button" "QQ音乐暂停时，菜单栏 →「设置…」→「高级」→「测试注入（诊断）」→ 开始播放"
+ask_manual "11-permission-revoke" "撤销 QQ音乐「输入监控」后点「测试注入（诊断）」：程序应给出诊断提示而非静默失败"
 ask_manual "8b-bluetooth-no-music" "全程 Apple Music 未被唤起（补充观察项）"
 
 stop_app

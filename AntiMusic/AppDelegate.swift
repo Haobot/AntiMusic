@@ -304,7 +304,7 @@ typealias MRMediaRemoteGetNowPlayingClientFunction = @convention(c) (DispatchQue
             ctl.onWakeNow = { [weak self] in self?.engine?.handleMediaKeyRequest(source: "settings-wake") }
             ctl.statusProvider = { [weak self] in
                 guard let self = self else { return "" }
-                return "状态：\(self.engine.machine.state.rawValue) ｜ \(PermissionsChecker.summary)"
+                return "当前状态：\(self.engine.machine.state.friendlyName)"
             }
             settingsWindow = ctl
         }
