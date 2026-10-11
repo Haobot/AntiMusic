@@ -2,7 +2,7 @@
 // StatusMenuController.swift
 // AntiMusic
 //
-// 菜单栏：状态显示、「测试注入」、手动唤醒、权限检查、设置入口（需求 5.4）。
+// 菜单栏：状态显示、设置入口、权限检查、退出（唤醒/测试均收进设置窗口，需求 5.4）。
 //
 
 import Foundation
@@ -30,9 +30,6 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
         menu.delegate = self
         menu.addItem(stateItem)
         menu.addItem(.separator())
-        menu.addItem(withTitle: "立即唤醒并播放", action: #selector(wakeNow), keyEquivalent: "")
-        menu.addItem(withTitle: "测试注入", action: #selector(testInject), keyEquivalent: "")
-        menu.addItem(.separator())
         menu.addItem(withTitle: "设置…", action: #selector(openSettings), keyEquivalent: ",")
         menu.addItem(withTitle: "检查权限", action: #selector(checkPermissions), keyEquivalent: "")
         menu.addItem(.separator())
@@ -51,14 +48,6 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
 
     func menuWillOpen(_ menu: NSMenu) {
         updateState(engine?.machine.state ?? .idle)
-    }
-
-    @objc private func wakeNow() {
-        engine?.handleMediaKeyRequest(source: "menu-wake")
-    }
-
-    @objc private func testInject() {
-        engine?.testInjectNow()
     }
 
     @objc private func openSettings() {
