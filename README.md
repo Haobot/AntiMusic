@@ -6,8 +6,9 @@
 
 ## ⬇ 下载
 
-- **[简介网页](https://haobot.github.io/AntiMusic/)**（安装指引 + 常见问题）
-- **[Releases](https://github.com/Haobot/AntiMusic/releases/latest)** → `AntiMusic-1.2-macOS.zip`（macOS 14+，Universal）
+- **[简介网页](https://haobot.github.io/AntiMusic/)**（安装指引 + 常见问题）· 国内镜像：[dl.davenger.cloud/antimusic/](https://dl.davenger.cloud/antimusic/)
+- **国内高速下载（腾讯云 COS）**：[AntiMusic-1.2-macOS.zip](https://dl.davenger.cloud/antimusic/v1.2/AntiMusic-1.2-macOS.zip) · [SHA-256](https://dl.davenger.cloud/antimusic/v1.2/AntiMusic-1.2-macOS.zip.sha256)
+- **GitHub 备源**：[Releases](https://github.com/Haobot/AntiMusic/releases/latest) → `AntiMusic-1.2-macOS.zip`（macOS 14+，Universal，与 COS 同一份）
 - 解压后把 `AntiMusic.app` 拖进「应用程序」；首次打开请**右键 → 打开**（未公证构建）
 
 - 实测环境：**macOS 27.0.1 (arm64) · QQ音乐 11.10.0 · Xcode 27.0**

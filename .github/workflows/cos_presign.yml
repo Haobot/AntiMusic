@@ -1,0 +1,45 @@
+name: COS Presign
+
+# CI 只签发 COS 预签名 PUT URL，绝不上传文件本体：海外 runner → 上海 COS 跨境
+# 上行必死（~8KB/s、~130s 断连，≥1MB 分块上传必失败；VoiceStickPlus 两轮诊断
+# run 定案，见 Doc/Ref/cos-distribution.md）。文件由发布机（国内网络）拿 URL 直传，
+# 凭据只存在于仓库 Secrets，任何本机不落盘。
+on:
+  workflow_dispatch:
+    inputs:
+      manifest:
+        description: "待签发对象清单 JSON：[{local,key},...]（local=发布机上的路径，key=COS 对象键）"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  presign:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Sign COS PUT URLs
+        env:
+          TENCENT_COS_SECRET_ID: ${{ secrets.TENCENT_COS_SECRET_ID }}
+          TENCENT_COS_SECRET_KEY: ${{ secrets.TENCENT_COS_SECRET_KEY }}
+          TENCENTCLOUD_SECRET_ID: ${{ secrets.TENCENTCLOUD_SECRET_ID }}
+          TENCENTCLOUD_SECRET_KEY: ${{ secrets.TENCENTCLOUD_SECRET_KEY }}
+          COS_BUCKET: voicestick-dl-1329978361
+          COS_REGION: ap-shanghai
+          MANIFEST: ${{ inputs.manifest }}
+        run: |
+          set -euo pipefail
+          pip install --quiet cos-python-sdk-v5
+          python3 scripts/cos_presign.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cos-presign
+          path: cos-presign.json
